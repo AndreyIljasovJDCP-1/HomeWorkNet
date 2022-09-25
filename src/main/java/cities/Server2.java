@@ -38,23 +38,24 @@ public class Server2 {
                         port = clientSocket.getPort();
                         firstRound = false;
                     } else {
-                        out.println(port + " назвал город: "
+                        out.println("Порт " + port + " назвал город: "
                                 + city.substring(0, 1).toUpperCase()
                                 + city.substring(1).toLowerCase()
                                 + ". Придумайте город на -> "
                                 + lastLetter
                         );
                         String newCity = in.readLine();
-                        if (citySet.contains(newCity.toLowerCase())) {
-                            out.println("Not OK. "
-                                    + newCity.substring(0, 1).toUpperCase()
-                                    + newCity.substring(1).toLowerCase()
-                                    + " - такой город уже называли.");
-                            continue;
-                        }
                         char firstLetter = newCity.toLowerCase().charAt(0);
 
                         if (lastLetter == firstLetter) {
+                            if (citySet.contains(newCity.toLowerCase())) {
+                                out.println("Not OK. "
+                                        + newCity.substring(0, 1).toUpperCase()
+                                        + newCity.substring(1).toLowerCase()
+                                        + " - такой город уже называли."
+                                );
+                                continue;
+                            }
                             lastLetter = getLastLetter(newCity.toLowerCase());
                             citySet.add(newCity.toLowerCase());
                             port = clientSocket.getPort();
