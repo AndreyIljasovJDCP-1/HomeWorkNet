@@ -34,7 +34,7 @@ public class Server2 {
                         out.println("??????????????");
                         city = in.readLine();
                         citySet.add(city.toLowerCase());
-                        lastLetter = getLastLetter(city);
+                        lastLetter = getLastLetter(city.toLowerCase());
                         port = clientSocket.getPort();
                         firstRound = false;
                     } else {
@@ -55,7 +55,7 @@ public class Server2 {
                         char firstLetter = newCity.toLowerCase().charAt(0);
 
                         if (lastLetter == firstLetter) {
-                            lastLetter = getLastLetter(newCity);
+                            lastLetter = getLastLetter(newCity.toLowerCase());
                             citySet.add(newCity.toLowerCase());
                             port = clientSocket.getPort();
                             city = newCity;
@@ -86,6 +86,6 @@ public class Server2 {
         while (badLetters.contains(Character.toString(
                 newCity.charAt(newCity.length() - ++i)))) ;
 
-        return newCity.toLowerCase().charAt(newCity.length() - i);
+        return newCity.charAt(newCity.length() - i);
     }
 }
