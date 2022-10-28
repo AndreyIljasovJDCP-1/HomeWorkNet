@@ -27,10 +27,8 @@ public class Server {
                     System.out.println(in.readLine() + " from port: "
                             + clientSocket.getPort());
 
-                    out.println("Network connected to -> "
-                            + clientSocket.getLocalSocketAddress());
-                    out.println("Knock, knock, Neo.");
-                    out.println("Follow the white rabbit...");
+                    response(out, clientSocket);
+
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage());
                 }
@@ -38,5 +36,18 @@ public class Server {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private static void response(PrintWriter out, Socket clientSocket) {
+        String host = clientSocket.getInetAddress().getHostName() + " : "
+                + clientSocket.getLocalPort() + " : " + clientSocket.getPort();
+        String msg = "<h1>Network connected to " + host + "</h1>"
+                + "<p>Knock, knock, Neo.<br>"
+                + "Follow the white rabbit...</p>";
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: text/html; charset=utf-8");
+        out.println();
+        out.println(msg);
+
     }
 }
