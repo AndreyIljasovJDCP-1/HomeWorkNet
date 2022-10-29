@@ -25,7 +25,7 @@ public class Server2 {
     }
 
     public void start() {
-        String newCity;
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server started...");
 
@@ -47,15 +47,12 @@ public class Server2 {
                     }
 
                     if (handler.getCity().isEmpty()) {
-                        handler.setCity(input);
-                        handler.addToCitySet();
-                        handler.setClientPort(clientSocket.getPort());
-                        handler.setLastLetter();
+                        handler.setCity(input, clientSocket.getPort());
                         getResponseCity(out, handler, "OK");
                         continue;
                     }
 
-                    newCity = handler.getCityFrom(input);
+                    String newCity = handler.getCityFrom(input);
 
                     if (handler.getLastLetter() == handler.getFirstLetter(newCity)) {
                         if (handler.isRepeat(newCity)) {
@@ -66,27 +63,22 @@ public class Server2 {
                             getResponseCity(out, handler, msg);
                             continue;
                         }
-                        handler.setCity(input);
-                        handler.addToCitySet();
-                        handler.setLastLetter();
-                        handler.setClientPort(clientSocket.getPort());
+                        handler.setCity(input, clientSocket.getPort());
                         getResponseCity(out, handler, "OK");
                     } else {
                         getResponseCity(out, handler, "Not OK");
                     }
-
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage());
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private static void getResponseCity(PrintWriter out, Handler handler, String ok) {
-        String msg = "<h3>" + ok + " Порт " + handler.getClientPort() + " назвал город: "
-                + handler.getCity() + ".<br>"
+        String msg = "<h3>" + ok
+                + " Порт " + handler.getClientPort()
+                + " назвал город: " + handler.getCity() + ".<br>"
                 + "Придумайте город на : "
                 + Character.toUpperCase(handler.getLastLetter()) + "</h3>";
         out.println("HTTP/1.1 200 OK");
