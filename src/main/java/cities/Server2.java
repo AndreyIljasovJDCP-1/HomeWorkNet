@@ -27,7 +27,6 @@ public class Server2 {
     public void start() {
         String city = "";
         String newCity;
-        boolean firstRound = true;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server started...");
 
@@ -46,33 +45,33 @@ public class Server2 {
                     }
                     if (input.contains("favicon")) continue;
 
-                    if (firstRound) {
+                    if (city.isEmpty()) {
                         city = handler.getCityName(input);
                         handler.addToCitySet(city);
                         handler.setClientPort(clientSocket.getPort());
                         handler.setLastLetter(city);
-                        firstRound = false;
                         getResponse(out, "OK");
                         getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
-                    } else {
-                        newCity = handler.getCityName(input);
-                        if (handler.getLastLetter() == handler.getFirstLetter(newCity)) {
-                            if (handler.isRepeat(newCity)) {
-                                getResponseAlreadyBeen(out, newCity);
-                                getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
-                                continue;
-                            }
+                        continue;
+                    }
 
-                            handler.addToCitySet(newCity);
-                            handler.setLastLetter(newCity);
-                            handler.setClientPort(clientSocket.getPort());
-                            getResponse(out, "OK");
-                            getResponseCity(out, handler.getClientPort(), newCity, handler.getLastLetter());
-                            city = newCity;
-                        } else {
-                            getResponse(out, "Not OK");
-                            getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
-                        }
+                    newCity = handler.getCityName(input);
+
+                    if (handler.isRepeat(newCity)) {
+                        getResponseAlreadyBeen(out, newCity);
+                        getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
+                        continue;
+                    }
+                    if (handler.getLastLetter() == handler.getFirstLetter(newCity)) {
+                        handler.addToCitySet(newCity);
+                        handler.setLastLetter(newCity);
+                        handler.setClientPort(clientSocket.getPort());
+                        getResponse(out, "OK");
+                        getResponseCity(out, handler.getClientPort(), newCity, handler.getLastLetter());
+                        city = newCity;
+                    } else {
+                        getResponse(out, "Not OK");
+                        getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
                     }
 
                 } catch (Exception e) {
