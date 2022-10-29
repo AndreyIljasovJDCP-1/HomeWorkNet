@@ -10,9 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class Server2 {
     private final int port;
-    private boolean firstRound = true;
-    int clientPort = 0;
-    char lastLetter = ' ';
+
     Handler handler;
 
     public Server2(int port, Handler handler) {
@@ -29,7 +27,7 @@ public class Server2 {
     public void start() {
         String city = "";
         String newCity;
-
+        boolean firstRound = true;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server started...");
 
@@ -42,34 +40,38 @@ public class Server2 {
 
                     String input = in.readLine();
                     System.out.println(input);
+                    if (input.contains(" / ")){
+                        getResponse(out, "Поиграем в города? Введите город:");
+                        continue;
+                    }
                     if (input.contains("favicon")) continue;
 
                     if (firstRound) {
                         city = handler.getCityName(input);
                         handler.addToCitySet(city);
-                        clientPort = clientSocket.getPort();
-                        lastLetter = handler.getLastLetter(city);
+                        handler.setClientPort(clientSocket.getPort());
+                        handler.setLastLetter(city);
                         firstRound = false;
                         getResponse(out, "OK");
-                        getResponseCity(out, clientPort, city, lastLetter);
+                        getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
                     } else {
                         newCity = handler.getCityName(input);
-                        if (lastLetter == handler.getFirstLetter(newCity)) {
+                        if (handler.getLastLetter() == handler.getFirstLetter(newCity)) {
                             if (handler.isRepeat(newCity)) {
                                 getResponseAlreadyBeen(out, newCity);
-                                getResponseCity(out, clientPort, city, lastLetter);
+                                getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
                                 continue;
                             }
 
                             handler.addToCitySet(newCity);
-                            lastLetter = handler.getLastLetter(newCity);
-                            clientPort = clientSocket.getPort();
+                            handler.setLastLetter(newCity);
+                            handler.setClientPort(clientSocket.getPort());
                             getResponse(out, "OK");
-                            getResponseCity(out, clientPort, newCity, lastLetter);
+                            getResponseCity(out, handler.getClientPort(), newCity, handler.getLastLetter());
                             city = newCity;
                         } else {
                             getResponse(out, "Not OK");
-                            getResponseCity(out, clientPort, city, lastLetter);
+                            getResponseCity(out, handler.getClientPort(), city, handler.getLastLetter());
                         }
                     }
 
