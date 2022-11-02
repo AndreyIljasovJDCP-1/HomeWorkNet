@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 public class Server2 {
@@ -37,6 +38,7 @@ public class Server2 {
                              clientSocket.getInputStream(), StandardCharsets.UTF_8))) {
 
                     String input = in.readLine();
+
                     System.out.println(input);
 
                     if (input.contains("favicon")) continue;
@@ -48,6 +50,7 @@ public class Server2 {
 
                     if (handler.getCity().isEmpty()) {
                         handler.setCity(input, clientSocket.getPort());
+                        handler.setCoordinates();
                         getResponseCity(out, handler, "OK");
                         continue;
                     }
@@ -64,6 +67,7 @@ public class Server2 {
                             continue;
                         }
                         handler.setCity(input, clientSocket.getPort());
+                        handler.setCoordinates();
                         getResponseCity(out, handler, "OK");
                     } else {
                         getResponseCity(out, handler, "Not OK");
@@ -79,6 +83,8 @@ public class Server2 {
         String msg = "<h3>" + ok
                 + " Порт " + handler.getClientPort()
                 + " назвал город: " + handler.getCity() + ".<br>"
+                + "широта: " + handler.getLatitude() + ".<br>"
+                + "долгота: " + handler.getLongitude() + ".<br>"
                 + "Придумайте город на : "
                 + Character.toUpperCase(handler.getLastLetter()) + "</h3>";
         out.println("HTTP/1.1 200 OK");
