@@ -1,5 +1,6 @@
 package cities;
 
+import cities.coordinates.Language;
 import cities.coordinates.Response;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
@@ -20,6 +21,7 @@ public class Handler {
     private Float longitude;
     private int clientPort = 0;
     private char lastLetter = ' ';
+    private Language language;
     private final Pattern pattern = Pattern.compile(
             "[" +                   //начало списка допустимых символов
                     "а-яА-ЯёЁ" +    //буквы русского алфавита
@@ -33,7 +35,7 @@ public class Handler {
     public void setCity(String input, int port) {
         String temp = input.split(" ")[1].substring(1);
         //todo если русские буквы проверка то раскодировка
-        if (temp.charAt(0)=='%') {
+        if (language == Language.RU) {
             temp = URLDecoder.decode(temp, StandardCharsets.UTF_8);
         }
 
@@ -44,12 +46,21 @@ public class Handler {
         citySet.add(city.toLowerCase());
     }
 
+    public void setLanguage(String input) {
+        String temp = input.split(" ")[1].substring(1);
+        //todo если русские буквы проверка то раскодировка
+        if (temp.charAt(0) == '%') {
+            language = Language.RU;
+        } else {
+            language = Language.EN;
+        }
+    }
+
     public void setCoordinates() {
         try {
-
-            //String cityRu = "Селятино";
-            //String codingName = URLEncoder.encode(city, StandardCharsets.UTF_8);
-            String url = REMOTE_SERVICE_SEARCH + "?name=" + city + "&language=ru";
+            String url = REMOTE_SERVICE_SEARCH
+                    + "?name=" + city
+                    + "&language=" + this.getLanguage();
 
             HttpResponse response = Request.Get(url)
                     .execute()
@@ -84,7 +95,7 @@ public class Handler {
     public String getCityFrom(String input) {
         String temp = input.split(" ")[1].substring(1);
         //todo если русские буквы проверка то раскодировка
-        if (temp.charAt(0)=='%') {
+        if (language == Language.RU) {
             temp = URLDecoder.decode(temp, StandardCharsets.UTF_8);
         }
         return temp;
@@ -104,6 +115,10 @@ public class Handler {
 
     public char getFirstLetter(String name) {
         return name.toLowerCase().charAt(0);
+    }
+
+    public String getLanguage() {
+        return language.name().toLowerCase();
     }
 
 }

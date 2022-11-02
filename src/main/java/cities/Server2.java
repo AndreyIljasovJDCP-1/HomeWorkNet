@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 public class Server2 {
@@ -49,6 +48,7 @@ public class Server2 {
                     }
 
                     if (handler.getCity().isEmpty()) {
+                        handler.setLanguage(input);
                         handler.setCity(input, clientSocket.getPort());
                         handler.setCoordinates();
                         getResponseCity(out, handler, "OK");
@@ -86,7 +86,8 @@ public class Server2 {
                 + "широта: " + handler.getLatitude() + ".<br>"
                 + "долгота: " + handler.getLongitude() + ".<br>"
                 + "Придумайте город на : "
-                + Character.toUpperCase(handler.getLastLetter()) + "</h3>";
+                + Character.toUpperCase(handler.getLastLetter())
+                + "(" + handler.getLanguage() + ")</h3>";
         out.println("HTTP/1.1 200 OK");
         out.println("Content-Type: text/html; charset=utf-8");
         out.println();
