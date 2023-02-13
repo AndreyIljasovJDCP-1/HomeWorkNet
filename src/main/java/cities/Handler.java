@@ -41,7 +41,7 @@ public class Handler {
 
         city = temp.substring(0, 1).toUpperCase()
                 + temp.substring(1).toLowerCase();
-        lastLetter = city.toLowerCase().charAt(city.length() - 1);
+        lastLetter = setLastLetter(city);
         clientPort = port;
         citySet.add(city.toLowerCase());
     }
@@ -107,6 +107,25 @@ public class Handler {
 
     public char getLastLetter() {
         return lastLetter;
+    }
+
+    /**
+     * Возвращает последнюю букву, исключая "плохие" буквы (ыйьъё).
+     * Например: Мирный, Грозный, Долгопрудный последняя буква 'н'
+     *
+     * @return char - последняя буква
+     */
+    public char setLastLetter(String city) {
+        if (language == Language.RU) {
+            String badLetters = "ыйьъё";
+            int i = 0;
+            while (badLetters.contains(Character.toString(
+                    city.charAt(city.length() - ++i)))) ;
+
+            return city.charAt(city.length() - i);
+        } else {
+            return city.toLowerCase().charAt(city.length() - 1);
+        }
     }
 
     public int getClientPort() {
