@@ -6,87 +6,100 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
 
 public class Server2 {
-    private static final int PORT = 8089;
+    private final int port;
+
+    Handler handler;
+
+    public Server2(int port, Handler handler) {
+        this.port = port;
+        this.handler = handler;
+    }
 
     public static void main(String[] args) {
+        Handler handler = new Handler();
+        Server2 server = new Server2(8085, handler);
+        server.start();
+    }
 
+    public void start() {
 
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server started...");
-            Set<String> citySet = new HashSet<>();
-            boolean firstRound = true;
-            char lastLetter = ' ';
-            String city = "";
-            int port = 0;
+
             while (true) {
                 try (Socket clientSocket = serverSocket.accept();
                      PrintWriter out = new PrintWriter(
                              clientSocket.getOutputStream(), true);
                      BufferedReader in = new BufferedReader(new InputStreamReader(
-                             clientSocket.getInputStream()))) {
+                             clientSocket.getInputStream(), StandardCharsets.UTF_8))) {
 
-                    if (firstRound) {
-                        out.println("??????????????");
-                        city = in.readLine();
-                        citySet.add(city.toLowerCase());
-                        lastLetter = getLastLetter(city.toLowerCase());
-                        port = clientSocket.getPort();
-                        firstRound = false;
-                    } else {
-                        out.println("Порт " + port + " назвал город: "
-                                + city.substring(0, 1).toUpperCase()
-                                + city.substring(1).toLowerCase()
-                                + ". Придумайте город на -> "
-                                + lastLetter
-                        );
-                        String newCity = in.readLine();
-                        char firstLetter = newCity.toLowerCase().charAt(0);
+                    String input = in.readLine();
 
-                        if (lastLetter == firstLetter) {
-                            if (citySet.contains(newCity.toLowerCase())) {
-                                out.println("Not OK. "
-                                        + newCity.substring(0, 1).toUpperCase()
-                                        + newCity.substring(1).toLowerCase()
-                                        + " - такой город уже называли."
-                                );
-                                continue;
-                            }
-                            lastLetter = getLastLetter(newCity.toLowerCase());
-                            citySet.add(newCity.toLowerCase());
-                            port = clientSocket.getPort();
-                            city = newCity;
-                            out.println("OK");
-                        } else {
-                            out.println("Not OK");
-                        }
+                    System.out.println(input);
+
+                    if (input.contains("favicon")) continue;
+
+                    if (input.contains(" / ")) {
+                        getResponse(out);
+                        continue;
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage());
+
+                    if (handler.getCity().isEmpty()) {
+                        handler.setLanguage(input);
+                        handler.setCity(input, clientSocket.getPort());
+                        handler.setCoordinates();
+                        getResponseCity(out, handler, "OK");
+                        continue;
+                    }
+
+                    String newCity = handler.getCityFrom(input);
+
+                    if (handler.getLastLetter() == handler.getFirstLetter(newCity)) {
+                        if (handler.isRepeat(newCity)) {
+                            String msg = "Not OK. "
+                                    + newCity.substring(0, 1).toUpperCase()
+                                    + newCity.substring(1).toLowerCase()
+                                    + " - такой город уже называли.<br>";
+                            getResponseCity(out, handler, msg);
+                            continue;
+                        }
+                        handler.setCity(input, clientSocket.getPort());
+                        handler.setCoordinates();
+                        getResponseCity(out, handler, "OK");
+                    } else {
+                        getResponseCity(out, handler, "Not OK");
+                    }
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Возвращает последнюю букву, исключая "плохие" буквы (ыйьъё).
-     * Например: Мирный, Грозный, Долгопрудный последняя буква 'н'
-     *
-     * @param newCity город
-     * @return char - последняя буква
-     */
-    private static char getLastLetter(String newCity) {
-        String badLetters = "ыйьъё";
-        int i = 0;
-        while (badLetters.contains(Character.toString(
-                newCity.charAt(newCity.length() - ++i)))) ;
-
-        return newCity.charAt(newCity.length() - i);
+    private static void getResponseCity(PrintWriter out, Handler handler, String ok) {
+        String msg = "<h3>" + ok
+                + " Порт " + handler.getClientPort()
+                + " назвал город: " + handler.getCity() + ".<br>"
+                + "широта: " + handler.getLatitude() + ".<br>"
+                + "долгота: " + handler.getLongitude() + ".<br>"
+                + "Придумайте город на : "
+                + Character.toUpperCase(handler.getLastLetter())
+                + "(" + handler.getLanguage() + ")</h3>";
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: text/html; charset=utf-8");
+        out.println();
+        out.println(msg);
     }
+
+    private static void getResponse(PrintWriter out) {
+
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: text/html; charset=utf-8");
+        out.println();
+        out.println("<h3>Поиграем в города? Введите город:</h3>");
+    }
+
 }
