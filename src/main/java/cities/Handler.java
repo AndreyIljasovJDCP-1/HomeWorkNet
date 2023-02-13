@@ -5,6 +5,7 @@ import cities.coordinates.Response;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -58,10 +59,11 @@ public class Handler {
 
     public void setCoordinates() {
         try {
-            String url = REMOTE_SERVICE_SEARCH
-                    + "?name=" + city
-                    + "&language=" + this.getLanguage();
-
+            URIBuilder builder = new URIBuilder(REMOTE_SERVICE_SEARCH);
+            var url = builder
+                    .setParameter("name", city)
+                    .setParameter("language", this.getLanguage())
+                    .build();
             HttpResponse response = Request.Get(url)
                     .execute()
                     .returnResponse();
